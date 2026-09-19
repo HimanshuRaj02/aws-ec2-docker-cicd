@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deployment status - aws-ec2-docker-cicd</title>
+<meta name="description" content="A small website deployed to AWS EC2 by a Docker and GitHub Actions pipeline.">
+<style>
+  :root {
+    --bg: #F3F5F4;
+    --panel: #FFFFFF;
+    --ink: #0F1E1A;
+    --muted: #54625E;
+    --line: #C9D2CE;
+    --live: #1B7F4B;
+    --mark: #FFD23F;
+    --mark-ink: #0F1E1A;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0E1512;
+      --panel: #141D19;
+      --ink: #E8EFEC;
+      --muted: #9BABA5;
+      --line: #2A3833;
+      --live: #4CC38A;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  main { max-width: 44rem; margin: 0 auto; padding: 3.5rem 1.25rem 2rem; }
+  .status { display: flex; align-items: center; gap: .6rem; margin: 0 0 1.25rem; color: var(--muted); font-size: .95rem; }
+  .dot { width: .7rem; height: .7rem; border-radius: 50%; background: var(--live); flex: none; }
+  h1 { margin: 0 0 1rem; font-size: clamp(2rem, 6vw, 3.1rem); line-height: 1.08; letter-spacing: -0.02em; font-weight: 750; }
+  .lede { margin: 0 0 2.5rem; max-width: 34rem; color: var(--muted); font-size: 1.1rem; }
+  h2 { margin: 0 0 1rem; font-size: 1.05rem; font-weight: 650; }
+  .build { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 1.5rem; margin-bottom: 2.75rem; }
+  dl { margin: 0; }
+  dl > div { display: grid; grid-template-columns: 8.5rem 1fr; gap: 1rem; padding: .7rem 0; border-top: 1px solid var(--line); align-items: baseline; }
+  dl > div:first-child { border-top: 0; padding-top: 0; }
+  dt { color: var(--muted); font-size: .95rem; }
+  dd { margin: 0; overflow-wrap: anywhere; }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+  .sha { display: inline-block; background: var(--mark); color: var(--mark-ink); padding: .05em .5em; border-radius: 3px; font-size: 1.4rem; font-weight: 650; letter-spacing: .02em; }
+  ol { margin: 0 0 2.75rem; padding-left: 1.4rem; }
+  li { padding-left: .35rem; margin-bottom: .55rem; }
+  li::marker { color: var(--muted); font-weight: 600; }
+  footer { border-top: 1px solid var(--line); padding-top: 1.25rem; color: var(--muted); font-size: .95rem; }
+  a { color: inherit; text-underline-offset: .2em; }
+  a:focus-visible { outline: 3px solid var(--mark); outline-offset: 3px; }
+  @media (max-width: 30rem) {
+    dl > div { grid-template-columns: 1fr; gap: .1rem; }
+    .build { padding: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <p class="status"><span class="dot" aria-hidden="true"></span>Live on AWS EC2</p>
+  <h1>This page was deployed by a pipeline.</h1>
+  <p class="lede">Every push to the main branch builds a Docker image and updates this server. Nobody logs in to copy files by hand.</p>
+
+  <section class="build" aria-labelledby="build-h">
+    <h2 id="build-h">What is running right now</h2>
+    <dl>
+      <div><dt>Commit</dt><dd><code class="sha" data-fill>__GIT_SHA__</code></dd></div>
+      <div><dt>Built (UTC)</dt><dd class="mono" data-fill>__BUILD_TIME__</dd></div>
+      <div><dt>Server</dt><dd>Nginx in a Docker container on Ubuntu (AWS EC2)</dd></div>
+      <div><dt>Health check</dt><dd id="health">Checking /health</dd></div>
+    </dl>
+  </section>
+
+  <h2>How a change reaches this page</h2>
+  <ol>
+    <li>Code is pushed to the main branch on GitHub.</li>
+    <li>GitHub Actions builds the Docker image.</li>
+    <li>The image is pushed to Docker Hub.</li>
+    <li>The EC2 server pulls the new image and restarts the container.</li>
+    <li>The pipeline calls <code>/health</code> and fails the run if the site does not answer.</li>
+  </ol>
+
+  <footer>
+    Built by Himanshu Raj. <a href="https://github.com/HimanshuRaj02/aws-ec2-docker-cicd">Source code on GitHub</a>
+  </footer>
+</main>
+<script>
+  document.querySelectorAll('[data-fill]').forEach(function (el) {
+    if (el.textContent.trim().indexOf('__') === 0) {
+      el.textContent = 'not built by the pipeline yet';
+      el.classList.remove('sha');
+    }
+  });
+  var health = document.getElementById('health');
+  fetch('/health', { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.text() : Promise.reject(new Error('bad status')); })
+    .then(function (t) { health.textContent = 'Answering at /health (' + t.trim() + ')'; })
+    .catch(function () { health.textContent = 'Not reachable from this page'; });
+</script>
+</body>
+</html>

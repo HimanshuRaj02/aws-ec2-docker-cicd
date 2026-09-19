@@ -1,0 +1,9 @@
+# Never commit keys or secrets
+*.pem
+*.key
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
