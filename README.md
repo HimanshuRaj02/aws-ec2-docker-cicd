@@ -9,16 +9,18 @@ A small website that is deployed to an AWS EC2 server automatically. Every push 
 ```mermaid
 flowchart LR
     A[Push to main] --> B[GitHub Actions]
-    B --> C[Build Docker image]
-    C --> D[Push to Docker Hub]
+    B --> T[Build and smoke-test image]
+    T --> C[Build and push image]
+    C --> D[Docker Hub]
     D --> E[SSH to EC2: pull and restart]
     E --> F[Health check on /health]
 ```
 
 1. A push to `main` starts the workflow in `.github/workflows/deploy.yml`.
-2. The `build-and-push` job builds the image from the `Dockerfile` and pushes it to Docker Hub with two tags: `latest` and the short commit id.
-3. The `deploy` job connects to the EC2 server over SSH, pulls `latest`, and replaces the running container.
-4. The job then calls `/health` and fails the run if the site does not answer.
+2. The `test` job builds the image, starts it, and runs `scripts/smoke-test.sh` against it. If a test fails, nothing is published.
+3. The `build-and-push` job builds the image from the `Dockerfile` and pushes it to Docker Hub with two tags: `latest` and the short commit id.
+4. The `deploy` job connects to the EC2 server over SSH, pulls `latest`, and replaces the running container.
+5. The job then calls `/health` and fails the run if the site does not answer.
 
 ## Tech stack
 
@@ -28,7 +30,7 @@ flowchart LR
 | Containers | Docker, Docker Hub |
 | Web server | Nginx (alpine image) |
 | CI/CD | GitHub Actions |
-| Scripting | Bash |
+| Scripting | Bash (smoke tests, server setup, monitoring) |
 
 ## Project structure
 
@@ -38,6 +40,8 @@ flowchart LR
 ├── nginx.conf                   Nginx config, including the /health endpoint
 ├── Dockerfile                   Builds the image and stamps the commit id into the page
 ├── scripts/setup-ec2.sh         One-time Docker install on the server
+├── scripts/smoke-test.sh        Tests run by the pipeline before publishing
+├── scripts/monitor.sh           Health check and log file for the server (cron)
 └── .github/workflows/deploy.yml The CI/CD pipeline
 ```
 
@@ -74,6 +78,35 @@ Log out and back in so Docker works without `sudo`.
 
 **4. Push to `main`.** The pipeline runs, and the site is live at `http://<EC2_HOST>`.
 
+## Testing
+
+The pipeline runs `scripts/smoke-test.sh` on every push. It checks that `/health` answers `ok`, that the home page loads, that the commit id was stamped into the page, and that an unknown URL returns 404. You can run the same checks locally:
+
+```bash
+docker run -d --name site-test -p 8080:80 aws-ec2-docker-cicd
+bash scripts/smoke-test.sh http://localhost:8080
+docker rm -f site-test
+```
+
+## Monitoring and logs
+
+On the server, `scripts/monitor.sh` checks `/health`, writes a timestamped line to `~/site-monitor.log`, and restarts the container if the check fails. Run it every 5 minutes with cron:
+
+```bash
+git clone https://github.com/HimanshuRaj02/aws-ec2-docker-cicd.git
+crontab -e
+# add this line at the end:
+*/5 * * * * bash /home/ubuntu/aws-ec2-docker-cicd/scripts/monitor.sh
+```
+
+Useful commands for troubleshooting:
+
+```bash
+docker ps                      # is the container running?
+docker logs website            # Nginx access and error logs
+tail -n 20 ~/site-monitor.log  # recent health checks
+```
+
 ## Security notes
 
 - The `.pem` key and all credentials are stored only as GitHub secrets. They are never committed (see `.gitignore`).
@@ -85,7 +118,8 @@ Log out and back in so Docker works without `sudo`.
 
 - Create the EC2 instance and security group with Terraform.
 - Add HTTPS with a domain name and a certificate.
-- Add a test or lint step before the image is built.
+- Add a staging environment that is tested before production.
+- Send the monitoring results to CloudWatch and set up an alarm.
 - Replace SSH deployment with AWS Systems Manager.
 
 ## License
