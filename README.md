@@ -18,7 +18,7 @@ flowchart LR
     E --> F[Health check on /health]
 ```
 
-1. A push to `main` starts the workflow in `.github/workflows/deploy.yml`.
+1. A push to `main` starts the workflow in `.github/workflows/ci.yml`.
 2. The `test` job builds the image, starts it, and runs `scripts/smoke-test.sh` against it. If a test fails, nothing is published.
 3. The `build-and-push` job builds the image from the `Dockerfile` and pushes it to Docker Hub with two tags: `latest` and the short commit id.
 4. The `deploy` job connects to the EC2 server over SSH, pulls `latest`, and replaces the running container.
@@ -44,7 +44,7 @@ flowchart LR
 ├── scripts/setup-ec2.sh         One-time Docker install on the server
 ├── scripts/smoke-test.sh        Tests run by the pipeline before publishing
 ├── scripts/monitor.sh           Health check and log file for the server (cron)
-└── .github/workflows/deploy.yml The CI/CD pipeline
+└── .github/workflows/ci.yml The CI/CD pipeline
 ```
 
 ## Run it locally
