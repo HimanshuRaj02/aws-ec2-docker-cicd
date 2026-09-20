@@ -56,7 +56,7 @@ docker run --rm -p 8080:80 aws-ec2-docker-cicd
 
 Open http://localhost:8080. Locally the page shows `local` as the commit id, because the pipeline fills in the real one.
 
-## Set it up yourself
+## Set it up yourself (full pipeline, planned)
 
 **1. EC2 server.** Launch an Ubuntu instance and open ports 22 (SSH) and 80 (HTTP) in its security group. Connect and run:
 
@@ -109,7 +109,7 @@ docker logs website            # Nginx access and error logs
 tail -n 20 ~/site-monitor.log  # recent health checks
 ```
 
-## Security notes
+## Security notes (for the planned EC2 deployment)
 
 - The `.pem` key and all credentials are stored only as GitHub secrets. They are never committed (see `.gitignore`).
 - SSH uses key-based login only.
