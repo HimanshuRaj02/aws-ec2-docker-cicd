@@ -1,10 +1,12 @@
-# AWS EC2 + Docker + GitHub Actions CI/CD
+   # Dockerized Website with GitHub Actions CI
 
-![Build and deploy](https://github.com/HimanshuRaj02/aws-ec2-docker-cicd/actions/workflows/deploy.yml/badge.svg)
+   ![CI](https://github.com/HimanshuRaj02/aws-ec2-docker-cicd/actions/workflows/ci.yml/badge.svg)
 
-A small website that is deployed to an AWS EC2 server automatically. Every push to `main` builds a Docker image, publishes it to Docker Hub and restarts the container on EC2. The page shows which commit is live, so a change is easy to verify.
+   A small website packaged with Docker and Nginx. On every push to `main`, a GitHub Actions pipeline builds the Docker image and runs automated smoke tests. Deploying to AWS EC2 is planned as the next step.
 
-## How it works
+   ## Full pipeline (target design)
+
+   Implemented now: the first stages (push, GitHub Actions, build and smoke-test). The Docker Hub and EC2 stages are planned.
 
 ```mermaid
 flowchart LR
