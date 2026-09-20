@@ -23,7 +23,7 @@ fi
 BODY="$(curl -fsS "$BASE_URL/")"
 
 echo "Test 2: home page loads and has the expected heading"
-if ! grep -q "This page was deployed by a pipeline" <<< "$BODY"; then
+if ! grep -q "built and tested by a pipeline" <<< "$BODY"; then
   echo "FAIL: heading not found on the home page"
   exit 1
 fi
