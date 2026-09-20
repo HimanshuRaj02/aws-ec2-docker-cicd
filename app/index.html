@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Deployment status - aws-ec2-docker-cicd</title>
-<meta name="description" content="A small website deployed to AWS EC2 by a Docker and GitHub Actions pipeline.">
+<title>Pipeline status - aws-ec2-docker-cicd</title>
+<meta name="description" content="A small website packaged with Docker and tested by a GitHub Actions pipeline.">
 <style>
   :root {
     --bg: #F3F5F4;
@@ -61,27 +61,26 @@
 </head>
 <body>
 <main>
-  <p class="status"><span class="dot" aria-hidden="true"></span>Live on AWS EC2</p>
-  <h1>This page was deployed by a pipeline.</h1>
-  <p class="lede">Every push to the main branch builds a Docker image and updates this server. Nobody logs in to copy files by hand.</p>
+  <p class="status"><span class="dot" aria-hidden="true"></span>Running in a Docker container</p>
+  <h1>This page is built and tested by a pipeline.</h1>
+  <p class="lede">Every push to the main branch builds a Docker image and runs automated smoke tests in GitHub Actions. Deployment to AWS EC2 is planned as a next step.</p>
 
   <section class="build" aria-labelledby="build-h">
     <h2 id="build-h">What is running right now</h2>
     <dl>
       <div><dt>Commit</dt><dd><code class="sha" data-fill>__GIT_SHA__</code></dd></div>
       <div><dt>Built (UTC)</dt><dd class="mono" data-fill>__BUILD_TIME__</dd></div>
-      <div><dt>Server</dt><dd>Nginx in a Docker container on Ubuntu (AWS EC2)</dd></div>
+      <div><dt>Server</dt><dd>Nginx in a Docker container</dd></div>
       <div><dt>Health check</dt><dd id="health">Checking /health</dd></div>
     </dl>
   </section>
 
-  <h2>How a change reaches this page</h2>
+  <h2>What the pipeline does on every push</h2>
   <ol>
     <li>Code is pushed to the main branch on GitHub.</li>
     <li>GitHub Actions builds the Docker image.</li>
-    <li>The image is pushed to Docker Hub.</li>
-    <li>The EC2 server pulls the new image and restarts the container.</li>
-    <li>The pipeline calls <code>/health</code> and fails the run if the site does not answer.</li>
+    <li>The container is started and four smoke tests run against it, including <code>/health</code>.</li>
+    <li>The run is marked green if every test passes, and red if one fails.</li>
   </ol>
 
   <footer>
