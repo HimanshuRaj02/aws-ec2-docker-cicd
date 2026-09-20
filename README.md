@@ -28,8 +28,8 @@ flowchart LR
 
 | Area | Tool |
 |---|---|
-| Cloud | AWS EC2 (Ubuntu), Security Groups |
-| Containers | Docker, Docker Hub |
+| Cloud | AWS EC2 (Ubuntu), Security Groups (planned) |
+| Containers | Docker (Docker Hub planned) |
 | Web server | Nginx (alpine image) |
 | CI/CD | GitHub Actions |
 | Scripting | Bash (smoke tests, server setup, monitoring) |
