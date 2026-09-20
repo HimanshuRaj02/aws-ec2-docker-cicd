@@ -1,27 +1,27 @@
- name: CI - build and test
+name: CI - build and test
 
-   on:
-     push:
-       branches: [main]
-     workflow_dispatch:
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
 
-   jobs:
-     test:
-       name: Build and smoke-test the image
-       runs-on: ubuntu-latest
-       steps:
-         - name: Check out code
-           uses: actions/checkout@v4
+jobs:
+  test:
+    name: Build and smoke-test the image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
 
-         - name: Build the image
-           run: docker build -t site-test .
+      - name: Build the image
+        run: docker build -t site-test .
 
-         - name: Start the container
-           run: docker run -d --name site-test -p 8080:80 site-test
+      - name: Start the container
+        run: docker run -d --name site-test -p 8080:80 site-test
 
-         - name: Run smoke tests
-           run: bash scripts/smoke-test.sh http://localhost:8080
+      - name: Run smoke tests
+        run: bash scripts/smoke-test.sh http://localhost:8080
 
-         - name: Show container logs
-           if: always()
-           run: docker logs site-test
+      - name: Show container logs
+        if: always()
+        run: docker logs site-test
